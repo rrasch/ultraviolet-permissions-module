@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Copyright (C) 2019 CERN.
 # Copyright (C) 2019 Northwestern University.
@@ -5,18 +6,17 @@
 # Invenio-RDM-Records is free software; you can redistribute it and/or modify
 # it under the terms of the MIT License; see LICENSE file for more details.
 
-"""Permissions for Invenio RDM Records."""
+"""Permissions for UltravioLet  Records. Mostly similar to InvenioRDM but adds policy for Proprietary records"""
 
 from invenio_records_permissions.generators import AnyUser, \
     AuthenticatedUser, Disable, SystemProcess
-from invenio_records_permissions.policies.records import RecordPermissionPolicy
-
-from invenio_rdm_records.services.generators import IfDraft, IfRestricted, RecordOwners, SecretLinks
 from invenio_rdm_records.services.permissions import RDMRecordPermissionPolicy
-from .generators import IfProprietary
+from invenio_rdm_records.services.generators import RecordOwners, SecretLinks
+from .generators import ProprietaryRecordPermissions
 
 
-class UltraVioletRecordPermissionPolicy(RDMRecordPermissionPolicy):
+
+class UltraVioletPermissionPolicy(RDMRecordPermissionPolicy):
     """Access control configuration for records.
 
     Note that even if the array is empty, the invenio_access Permission class
@@ -35,7 +35,7 @@ class UltraVioletRecordPermissionPolicy(RDMRecordPermissionPolicy):
     can_manage = [RecordOwners(), SystemProcess()]
     can_curate = can_manage + [SecretLinks("edit")]
     can_preview = can_manage + [SecretLinks("preview")]
-    can_view = can_manage + [SecretLinks("view")]
+    can_view = can_manage + [SecretLinks("view"), ProprietaryRecordPermissions()]
 
     can_authenticated = [AuthenticatedUser(), SystemProcess()]
     can_all = [AnyUser(), SystemProcess()]
@@ -46,9 +46,9 @@ class UltraVioletRecordPermissionPolicy(RDMRecordPermissionPolicy):
     # Allow searching of records
     can_search = can_all
     # Allow reading metadata of a record
-    can_read = [IfProprietary('record', then_=can_view, else_=can_all)]
+    can_read = [IfRestricted('record', then_=can_view, else_=can_all)]
     # Allow reading the files of a record
-    can_read_files = [IfProprietary('files', then_=can_view, else_=can_all)]
+    can_read_files = [IfRestricted('files', then_=can_view, else_=can_all)]
     # Allow submitting new record
     can_create = can_authenticated
 

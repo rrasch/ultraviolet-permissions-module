@@ -11,8 +11,7 @@
 # TODO: This is an example file. Remove it if you do not need it, including
 # the templates and static folders as well as the test case.
 
-from flask import Blueprint, render_template
-from flask_babelex import gettext as _
+from flask import Blueprint
 
 blueprint = Blueprint(
     'ultraviolet_permissions',

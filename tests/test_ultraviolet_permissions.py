@@ -9,8 +9,13 @@
 """Module tests."""
 
 from flask import Flask
+import flask_security
+import pytest
 
+from .conftest import create_roles, assign_roles, login_user, logout_user, restricted_record
 from ultraviolet_permissions import UltravioletPermssions
+from invenio_accounts.testutils import create_test_user
+from invenio_rdm_records.tests.conftest import minimal_record
 
 
 def test_version():
@@ -37,3 +42,38 @@ def test_view(base_client):
     res = base_client.get("/")
     assert res.status_code == 200
     assert 'Welcome to Ultraviolet Permssions' in str(res.data)
+
+def test_user_without_special_role(base_client):
+    client = base_client
+    user = create_test_user()
+    recid = create_propriatery_record(client)
+    login_user(client, user)
+    url = f"/records/{recid}"
+
+    # Anonymous user can't list files
+    response = client.get(url, headers=headers)
+    assert 403 == response.status_code
+
+def test_anonymous(base_client):
+    client = base_client
+    recid = create_propriatery_record(client)
+    url = f"/records/{recid}"
+
+    # Anonymous user can't list files
+    response = client.get(url, headers=headers)
+    assert 403 == response.status_code
+
+def test_user_with_special_role(base_client):
+    client = base_client
+    user = create_test_user()
+    role = create_roles(['nyu'])
+    assign_roles(user, [role])
+    login_user(client, user)
+
+    recid = create_propriatery_record(client)
+
+    url = f"/records/{recid}"
+
+    # Anonymous user can't list files
+    response = client.get(url, headers=headers)
+    assert 200 == response.status_code

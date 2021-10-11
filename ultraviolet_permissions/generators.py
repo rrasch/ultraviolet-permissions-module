@@ -1,91 +1,53 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2021 NYU.
+# Copyright (C) 2021 Graz University of Technology.
+# Copyright (C) 2021 CERN.
+# Copyright (C) 2021 TU Wien.
 #
-# Ultraviolet Permssions is free software; you can redistribute it and/or
-# modify it under the terms of the MIT License; see LICENSE file for more
-# details.
+# Invenio-RDM-Records is free software; you can redistribute it and/or modify
+# it under the terms of the MIT License; see LICENSE file for more details.
+#
+#
 
-"""Invenio-RDM-Records Permissions Generators."""
-
-import operator
-from functools import reduce
-from itertools import chain
-
+"""UltraViolet Permissions Generators."""
 from elasticsearch_dsl import Q
-from flask_principal import UserNeed
 from invenio_access.permissions import authenticated_user
+from invenio_access.models import  RoleNeed
 from invenio_records_permissions.generators import Generator
 
-from invenio_rdm_records.records import RDMDraft
 
-class IfProprietary(Generator):
-    """IfProprietary.
 
-    IfProprietary(
-        'record',
-        then_=[RecordPermissionLevel('view')],
-        else_=[ActionNeed(superuser-access)],
-    )
+class ProprietaryRecordPermissions(Generator):
+    """ProprietaryRecordPermissions
 
-    A record permission level defines an aggregated set of
-    low-level permissions,
-    that grants increasing level of permissions to a record.
-
+    Allows users who were granted  a specific role to view additional records
+    Main use case are records which should be only available to NYU community
+    Another use case are records that only can be accessed by users who met special conditions.
+    In second case record curators check the condition outside Ultraviolet and then assign the
+    user to a special role.
+    InvenioRDM data model does not allow to add role to the access section of the record ( See https://inveniordm.docs.cern.ch/reference/metadata/)
+    As a proof of concept solution we use additional_descriptions field where value will be equal to "role" and type will be equal
+    to "Technical Info". Hopefully InvenioRDM will modify their data model and we won't have to use this model in production
+    We expect that even users who do not have access to the records will be able to see them in the search so query filter is set to any_user
     """
 
-    def __init__(self, field, then_, else_):
-        """Constructor."""
-        self.field = field
-        self.then_ = then_
-        self.else_ = else_
-
-    def generators(self, record):
-        """Get the "then" or "else" generators."""
-        if record is None:
-            # TODO - when permissions on links are checked, the record is not
-            # passes properly, causing below ``record.access`` to fail.
-            return self.else_
-        is_restricted = getattr(
-            record.access.protection, self.field, "restricted")
-        return self.then_ if is_restricted == "restricted" else self.else_
-
     def needs(self, record=None, **kwargs):
-        """Set of Needs granting permission."""
-        is_nyu = getattr(
-            record.metadata.additional_descriptions.description, self.field, "<p>NYU-Only</p>")
-        if is_nyu == "<p>NYU-Only</p>":
-          return [authenticated_user]
-        else:
-          needs = [
-            g.needs(record=record, **kwargs) for g in self.generators(record)]
-          return set(chain.from_iterable(needs))
+        """Enabling Needs."""
+        if record is None:
+            # 'record is None' means that this must be a 'create'
+            # this should be allowed for any authenticated user
+            return [authenticated_user]
 
-    def excludes(self, record=None, **kwargs):
-        """Set of Needs denying permission."""
-        needs = [
-            g.excludes(record=record, **kwargs) for g in self.generators(
-                record)]
-        return set(chain.from_iterable(needs))
-
-    def make_query(self, generators, **kwargs):
-        """Make a query for one set of generators."""
-        queries = [g.query_filter(**kwargs) for g in generators]
-        queries = [q for q in queries if q]
-        return reduce(operator.or_, queries) if queries else None
+        additional_descriptions = record.get("metadata").get("additional_descriptions", [])
+        for index, description in enumerate(additional_descriptions, start = 0):
+            if description.get("type") == "technical-info":
+                role = description.get("description")
+                for char in role:
+                    if char in "</>p":
+                        role.replace(char, '')
+                return [RoleNeed(role.name)]
+        return []
 
     def query_filter(self, **kwargs):
-        """Filters for current identity as super user."""
-        q_restricted = Q("match", **{f"access.{self.field}": "restricted"})
-        q_public = Q("match", **{f"access.{self.field}": "public"})
-        then_query = self.make_query(self.then_, **kwargs)
-        else_query = self.make_query(self.else_, **kwargs)
-
-        if then_query and else_query:
-            return (q_restricted & then_query) | (q_public & else_query)
-        elif then_query:
-            return (q_restricted & then_query) | q_public
-        elif else_query:
-            return q_public & else_query
-        else:
-            return q_public
+        """Match all in search."""
+        return Q('can_all')
