@@ -11,10 +11,23 @@
 
 """UltraViolet Permissions Generators."""
 from elasticsearch_dsl import Q
-from invenio_access.permissions import authenticated_user
+from invenio_access.permissions import authenticated_user, superuser_access, any_user
 from invenio_access.models import  RoleNeed
 from invenio_records_permissions.generators import Generator
 
+
+def get_roles(record, user_role):
+    roles = []
+    additional_descriptions = record.get("metadata").get("additional_descriptions", [])
+    for index, description in enumerate(additional_descriptions, start = 0):
+        if description.get("type") == "technical-info":
+            role = description.get("description")
+            for char in role:
+                if char in "</>p":
+                    role.replace(char, '')
+            if role.lower() == user_role:
+                roles.append(role)
+    return roles 
 
 
 class ProprietaryRecordPermissions(Generator):
@@ -51,3 +64,97 @@ class ProprietaryRecordPermissions(Generator):
     def query_filter(self, **kwargs):
         """Match all in search."""
         return Q('can_all')
+
+
+class AdminSuperUser(Generator):
+    """Allows admin superusers"""
+
+    def __init__(self):
+        """Constructor."""
+        super(AdminSuperUser, self).__init__()
+
+    def needs(self, **kwargs):
+        """Enabling Needs."""
+        return [superuser_access]
+
+    def query_filter(self, identity=None, **kwargs):
+        """Filters for current identity as super user."""
+        if superuser_access in identity.provides:
+            return Q('match_all')
+        else:
+            return []
+
+
+class Depositor(Generator):
+    """Allow NYU Depositors"""
+
+    def __init__(self):
+        """Constructor."""
+        super(Depositor, self).__init__()
+
+    def needs(self, record=None, **kwargs):
+        """Enabling Needs."""
+        roles = get_roles(record, "depositor")
+        if len(roles) == 0:
+            return []
+        return [RoleNeed(role) for role in roles]
+
+
+class Viewer(Generator):
+    """Allow NYU Viewers for files restricted to NYU"""
+
+    def __init__(self):
+        """Constructor."""
+        super(Viewer, self).__init__()
+
+    def needs(self, record=None, **kwargs):
+        """Enabling Needs."""
+        roles = get_roles(record, "viewer")
+        if len(roles) == 0:
+            return []
+        return [RoleNeed(role) for role in roles]
+
+
+class RestrictedDataUser(Generator):
+    """Allow user who has agreed to terms of data use"""
+
+    def __init__(self):
+        """Constructor."""
+        super(RestrictedDataUser, self).__init__()
+
+    def needs(self, record=None, **kwargs):
+        """Enabling Needs."""
+        roles = get_roles(record, "restricted_data_user")
+        if len(roles) == 0:
+            return []
+        return [RoleNeed(role) for role in roles]
+
+
+class PublicViewer(Generator):
+    """Allow Public Viewer for any files that are open"""
+
+    def __init__(self):
+        """Constructor."""
+        super(PublicViewer, self).__init__()
+
+    def needs(self, record=None, **kwargs):
+        """Enabling Needs."""
+        roles = get_roles(record, "public_viewer")
+        if len(roles) == 0:
+            return []
+        return [RoleNeed(role) for role in roles]
+
+
+class Curator(Generator):
+    """Allow Curator"""
+
+    def __init__(self):
+        """Constructor."""
+        super(Curator, self).__init__()
+
+    def needs(self, record=None, **kwargs):
+        """Enabling Needs."""
+        roles = get_roles(record, "curator")
+        if len(roles) == 0:
+            return []
+        return [RoleNeed(role) for role in roles]
