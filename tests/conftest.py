@@ -47,6 +47,50 @@ def create_app(instance_path):
         return app
     return factory
 
+
+@pytest.fixture(scope='function')
+def user_roles_propriatery_record(role):
+    """Minimal record data as dict coming from the external world."""
+    return {
+        "pids": {},
+        "access": {
+            "record": "restricted",
+            "files": "restricted",
+        },
+        "files": {
+            "enabled": False,  # Most tests don't care about files
+        },
+        "metadata": {
+            "publication_date": "2020-06-01",
+            "resource_type": {"id": "image-photo"},
+            "creators": [{
+                "person_or_org": {
+                    "family_name": "Brown",
+                    "given_name": "Troy",
+                    "type": "personal"
+                }
+            }, {
+                "person_or_org": {
+                    "name": "Troy Inc.",
+                    "type": "organizational",
+                },
+            }],
+            "additional_descriptions": [
+                {
+                    "description": f"<p>{role}</p>",
+                    "type": {
+                        "id": "technical-info",
+                        "title": {
+                            "en": "Technical info"
+                        }
+                    }
+                }
+            ],
+            "title": "A Romans story"
+        }
+    }
+
+
 @pytest.fixture(scope='function')
 def propriatery_record():
     """Minimal record data as dict coming from the external world."""
