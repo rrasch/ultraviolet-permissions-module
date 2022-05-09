@@ -9,6 +9,12 @@ flask-security = "*"
 email-validator = "*"
 invenio-access = "*"
 werkzeug = "==2.0.3"
+invenio-app = "*"
+pytest-cov = "*"
+invenio-records-permissions = "*"
+elasticsearch-dsl = "*"
+invenio-rdm-records = "*"
+invenio-search = "*"
 
 [dev-packages]
 

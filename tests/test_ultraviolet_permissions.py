@@ -12,11 +12,13 @@ from flask import Flask
 import flask_security
 import pytest
 
-from .conftest import create_roles, assign_roles, login_user, logout_user, restricted_record, create_proprietary_record
-from ultraviolet_permissions import UltravioletPermssions
+from conftest import create_roles, assign_roles, login_user, logout_user, create_proprietary_record
 from invenio_accounts.testutils import create_test_user
-from invenio_rdm_records.tests.conftest import minimal_record
+# from invenio_rdm_records.tests.conftest import minimal_record
 
+import sys
+sys.path.append('/Users/kunal/dev/ultraviolet-permissions-module')
+import ultraviolet_permissions.ext
 
 def test_version():
     """Test version import."""
@@ -27,11 +29,11 @@ def test_version():
 def test_init():
     """Test extension initialization."""
     app = Flask('testapp')
-    ext = UltravioletPermssions(app)
+    ext = ultraviolet_permissions.ext.UltravioletPermssions(app)
     assert 'ultraviolet-permissions' in app.extensions
 
     app = Flask('testapp')
-    ext = UltravioletPermssions()
+    ext = ultraviolet_permissions.ext.UltravioletPermssions()
     assert 'ultraviolet-permissions' not in app.extensions
     ext.init_app(app)
     assert 'ultraviolet-permissions' in app.extensions

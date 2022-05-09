@@ -21,11 +21,12 @@ import pytest
 from flask import Flask
 from invenio_access.models import Role, User
 from invenio_db import db
-
-
-from ultraviolet_permissions import UltravioletPermssions
+from invenio_app.factory import create_app as _create_app
 from invenio_accounts.testutils import login_user_via_session
 
+import sys
+sys.path.append('/Users/kunal/dev/ultraviolet-permissions-module')
+import ultraviolet_permissions.ext
 
 
 @pytest.fixture(scope='module')
@@ -43,13 +44,16 @@ def create_app(instance_path):
     def factory(**config):
         app = Flask('testapp', instance_path=instance_path)
         app.config.update(**config)
-        UltravioletPermssions(app)
+        ultraviolet_permissions.ext.UltravioletPermssions(app)
         return app
     return factory
 
+@pytest.fixture(scope='function')
+def user_role(request):
+    return request.param
 
 @pytest.fixture(scope='function')
-def user_roles_propriatery_record(role):
+def user_roles_propriatery_record(user_role):
     """Minimal record data as dict coming from the external world."""
     return {
         "pids": {},
@@ -77,7 +81,7 @@ def user_roles_propriatery_record(role):
             }],
             "additional_descriptions": [
                 {
-                    "description": f"<p>{role}</p>",
+                    "description": f"<p>{user_role}</p>",
                     "type": {
                         "id": "technical-info",
                         "title": {
@@ -142,7 +146,7 @@ def minimal_headers():
 
 
 
-@pytest.function(scope='module')
+@pytest.fixture(scope='module')
 def create_roles(*names):
     """Helper to create roles."""
     roles = []
@@ -153,7 +157,7 @@ def create_roles(*names):
     db.session.commit()
     return roles
 
-@pytest.function(scope='module')
+@pytest.fixture(scope='module')
 def assign_roles(user, *roles):
     """Assign roles to users."""
     for user, roles in roles.items():
@@ -174,7 +178,7 @@ def logout_user(client):
 
 
 
-@pytest.function(scope='module')
+@pytest.fixture(scope='module')
 def create_proprietary_record(client):
     """Create draft ready for file attachment and return its id."""
     response = client.post("/records", json=create_proprietary_record, headers=minimal_headers())

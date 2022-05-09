@@ -12,7 +12,7 @@ from invenio_records_permissions.generators import AnyUser, \
     AuthenticatedUser, Disable, SystemProcess
 from invenio_rdm_records.services.permissions import RDMRecordPermissionPolicy
 from invenio_rdm_records.services.generators import RecordOwners, SecretLinks
-from .generators import ProprietaryRecordPermissions, AdminSuperUser, Curator, Depositor, Viewer, RestrictedDataUser, PublicViewer
+from .generators import ProprietaryRecordPermissions, AdminSuperUser, Curator, Depositor, Viewer, RestrictedDataUser, PublicViewer, IfRestricted
 
 
 

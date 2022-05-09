@@ -20,11 +20,13 @@ def get_roles(record, user_role):
     roles = []
     additional_descriptions = record.get("metadata").get("additional_descriptions", [])
     for index, description in enumerate(additional_descriptions, start = 0):
-        if description.get("type") == "technical-info":
+        if description.get("type").get("id") == "technical-info":
             role = description.get("description")
-            for char in role:
-                if char in "</>p":
-                    role.replace(char, '')
+            if "<p>" in role:
+                    role = role.replace("<p>", "")
+
+            if "</p>" in role:
+                role = role.replace("</p>", "")
             if role.lower() == user_role:
                 roles.append(role)
     return roles 
@@ -55,9 +57,11 @@ class ProprietaryRecordPermissions(Generator):
         for index, description in enumerate(additional_descriptions, start = 0):
             if description.get("type") == "technical-info":
                 role = description.get("description")
-                for char in role:
-                    if char in "</>p":
-                        role.replace(char, '')
+                if "<p>" in role:
+                    role = role.replace("<p>", "")
+
+                if "</p>" in role:
+                    role = role.replace("</p>", "")
                 return [RoleNeed(role.name)]
         return []
 
@@ -158,3 +162,44 @@ class Curator(Generator):
         if len(roles) == 0:
             return []
         return [RoleNeed(role) for role in roles]
+
+
+class IfRestricted(Generator):
+    """IfRestricted.
+    IfRestricted(
+    ‘metadata’,
+    RecordPermissionLevel(‘view’),
+    ActionNeed(superuser-access),
+    )
+    A record permission level defines an aggregated set of
+    low-level permissions,
+    that grants increasing level of permissions to a record.
+    """
+
+    def __init__(self, field, then_, else_):
+        """Constructor."""
+        self.field = field
+        self.then_ = then_
+        self.else_ = else_
+
+    def needs(self, record=None, **kwargs):
+        """Enabling Needs."""
+        if not record:
+            return []
+
+        is_field_restricted = (
+            record and
+            record.get('access', {}).get(self.field, "restricted")
+        )
+
+        if is_field_restricted == "restricted":
+            return getattr(self.then_[0], 'needs')()
+        else:
+            return getattr(self.else_[0], 'needs')()
+
+        return []
+
+    def query_filter(self, **kwargs):
+        """Filters for current identity as super user."""
+        # TODO: Implement with new permissions metadata
+        return Q('match_all')
