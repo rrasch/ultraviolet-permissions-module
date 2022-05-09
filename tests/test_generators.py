@@ -2,11 +2,9 @@ import pytest
 from invenio_access.models import RoleNeed
 from invenio_access.permissions import authenticated_user, superuser_access, any_user
 
-from conftest import propriatery_record, user_roles_propriatery_record
-
 import sys
-sys.path.append('/Users/kunal/dev/ultraviolet-permissions-module/ultraviolet_permissions')
-from generators import AdminSuperUser, Depositor, Viewer, RestrictedDataUser, PublicViewer, Curator
+sys.path.append('../ultraviolet_permissions')
+from ultraviolet_permissions.generators import AdminSuperUser, Depositor, Viewer, RestrictedDataUser, PublicViewer, Curator
 
 
 def test_admin_superuser():

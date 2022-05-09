@@ -24,9 +24,10 @@ from invenio_db import db
 from invenio_app.factory import create_app as _create_app
 from invenio_accounts.testutils import login_user_via_session
 
+from pathlib import Path
 import sys
-sys.path.append('/Users/kunal/dev/ultraviolet-permissions-module')
-import ultraviolet_permissions.ext
+sys.path.append(str(Path(__file__).parent.parent))
+from ultraviolet_permissions.ext import UltravioletPermssions
 
 
 @pytest.fixture(scope='module')
@@ -44,7 +45,7 @@ def create_app(instance_path):
     def factory(**config):
         app = Flask('testapp', instance_path=instance_path)
         app.config.update(**config)
-        ultraviolet_permissions.ext.UltravioletPermssions(app)
+        UltravioletPermssions(app)
         return app
     return factory
 

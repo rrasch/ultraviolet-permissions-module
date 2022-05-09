@@ -17,8 +17,8 @@ from invenio_accounts.testutils import create_test_user
 # from invenio_rdm_records.tests.conftest import minimal_record
 
 import sys
-sys.path.append('/Users/kunal/dev/ultraviolet-permissions-module')
-import ultraviolet_permissions.ext
+sys.path.append('../ultraviolet_permissions')
+from ultraviolet_permissions.ext import UltravioletPermssions
 
 def test_version():
     """Test version import."""
@@ -29,11 +29,11 @@ def test_version():
 def test_init():
     """Test extension initialization."""
     app = Flask('testapp')
-    ext = ultraviolet_permissions.ext.UltravioletPermssions(app)
+    ext = UltravioletPermssions(app)
     assert 'ultraviolet-permissions' in app.extensions
 
     app = Flask('testapp')
-    ext = ultraviolet_permissions.ext.UltravioletPermssions()
+    ext = UltravioletPermssions()
     assert 'ultraviolet-permissions' not in app.extensions
     ext.init_app(app)
     assert 'ultraviolet-permissions' in app.extensions
