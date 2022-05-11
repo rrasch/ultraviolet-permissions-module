@@ -23,8 +23,7 @@ def get_roles(record, user_role):
         if description.get("type").get("id") == "technical-info":
             role = description.get("description")
             if "<p>" in role:
-                    role = role.replace("<p>", "")
-
+                role = role.replace("<p>", "")
             if "</p>" in role:
                 role = role.replace("</p>", "")
             if role.lower() == user_role:
