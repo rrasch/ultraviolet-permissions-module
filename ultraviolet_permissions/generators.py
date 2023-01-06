@@ -14,21 +14,23 @@ from elasticsearch_dsl import Q
 from invenio_access.permissions import authenticated_user, superuser_access, any_user
 from invenio_access.models import  RoleNeed
 from invenio_records_permissions.generators import Generator
+from flask_login import current_user
 
 
 def get_roles(record, user_role):
-    roles = []
-    additional_descriptions = record.get("metadata").get("additional_descriptions", [])
-    for index, description in enumerate(additional_descriptions, start = 0):
-        if description.get("type").get("id") == "technical-info":
-            role = description.get("description")
-            if "<p>" in role:
-                role = role.replace("<p>", "")
-            if "</p>" in role:
-                role = role.replace("</p>", "")
-            if role.lower() == user_role:
-                roles.append(role)
-    return roles 
+    # roles = []
+    # additional_descriptions = record.get("metadata").get("additional_descriptions", [])
+    # for index, description in enumerate(additional_descriptions, start = 0):
+    #     if description.get("type").get("id") == "technical-info":
+    #         role = description.get("description")
+    #         if "<p>" in role:
+    #             role = role.replace("<p>", "")
+    #         if "</p>" in role:
+    #             role = role.replace("</p>", "")
+    #         if role.lower() == user_role:
+    #             roles.append(role)
+    # return roles
+    return current_user.roles
 
 
 class ProprietaryRecordPermissions(Generator):

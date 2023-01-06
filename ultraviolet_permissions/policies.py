@@ -11,9 +11,8 @@
 from invenio_records_permissions.generators import AnyUser, \
     AuthenticatedUser, Disable, SystemProcess
 from invenio_rdm_records.services.permissions import RDMRecordPermissionPolicy
-from invenio_rdm_records.services.generators import RecordOwners, SecretLinks
+from invenio_rdm_records.services.generators import RecordOwners, SecretLinks, CommunityAction
 from .generators import ProprietaryRecordPermissions, AdminSuperUser, Curator, Depositor, Viewer, RestrictedDataUser, PublicViewer, IfRestricted
-
 
 
 class UltraVioletPermissionPolicy(RDMRecordPermissionPolicy):
@@ -35,7 +34,7 @@ class UltraVioletPermissionPolicy(RDMRecordPermissionPolicy):
     can_manage = [RecordOwners(), SystemProcess(), AdminSuperUser()]
     can_curate = can_manage + [SecretLinks("edit"), Curator()]
     can_preview = can_manage + [SecretLinks("preview")]
-    can_view = can_manage + [SecretLinks("view"), ProprietaryRecordPermissions()]
+    can_view = can_manage + [SecretLinks("view"), ProprietaryRecordPermissions(), CommunityAction("view")]
 
     can_authenticated = [AuthenticatedUser(), SystemProcess()]
     can_all = [AnyUser(), SystemProcess(), PublicViewer()]
@@ -50,7 +49,7 @@ class UltraVioletPermissionPolicy(RDMRecordPermissionPolicy):
     # Allow reading the files of a record
     can_read_files = [IfRestricted('files', then_=can_view, else_=can_all)]
     # Allow submitting new record
-    can_create = can_authenticated
+    can_create = [AdminSuperUser()]
 
     #
     # Drafts
