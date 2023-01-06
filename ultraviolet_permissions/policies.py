@@ -31,7 +31,7 @@ class UltraVioletPermissionPolicy(RDMRecordPermissionPolicy):
     #
     # High-level permissions (used by low-level)
     #
-    can_manage = [RecordOwners(), SystemProcess(), AdminSuperUser()]
+    can_manage = [RecordOwners(), SystemProcess(), AdminSuperUser(), Depositor()]
     can_curate = can_manage + [SecretLinks("edit"), Curator()]
     can_preview = can_manage + [SecretLinks("preview")]
     can_view = can_manage + [SecretLinks("view"), ProprietaryRecordPermissions(), CommunityAction("view")]
@@ -42,14 +42,8 @@ class UltraVioletPermissionPolicy(RDMRecordPermissionPolicy):
     #
     #  Records
     #
-    # Allow searching of records
-    can_search = can_all
-    # Allow reading metadata of a record
-    can_read = [IfRestricted('record', then_=can_view, else_=can_all)]
-    # Allow reading the files of a record
-    can_read_files = [IfRestricted('files', then_=can_view, else_=can_all)]
     # Allow submitting new record
-    can_create = [AdminSuperUser()]
+    can_create = can_manage
 
     #
     # Drafts

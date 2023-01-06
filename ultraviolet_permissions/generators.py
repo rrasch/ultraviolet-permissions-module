@@ -91,18 +91,11 @@ class AdminSuperUser(Generator):
 
 
 class Depositor(Generator):
-    """Allow NYU Depositors"""
-
-    def __init__(self):
-        """Constructor."""
-        super(Depositor, self).__init__()
+    """Allows users with the "trusted-user" role."""
 
     def needs(self, record=None, **kwargs):
         """Enabling Needs."""
-        roles = get_roles(record, "depositor")
-        if len(roles) == 0:
-            return []
-        return [RoleNeed(role) for role in roles]
+        return [RoleNeed("depositor")]
 
 
 class Viewer(Generator):
@@ -175,6 +168,7 @@ class IfRestricted(Generator):
     A record permission level defines an aggregated set of
     low-level permissions,
     that grants increasing level of permissions to a record.
+    Currently not used
     """
 
     def __init__(self, field, then_, else_):
