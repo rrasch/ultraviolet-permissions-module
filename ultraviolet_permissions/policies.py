@@ -31,7 +31,7 @@ class UltraVioletPermissionPolicy(RDMRecordPermissionPolicy):
     #
     # High-level permissions (used by low-level)
     #
-    can_manage = [RecordOwners(), SystemProcess(), AdminSuperUser(), Depositor()]
+    can_manage = [SystemProcess(), AdminSuperUser(), Depositor()]
     can_curate = can_manage + [SecretLinks("edit"), Curator()]
     can_preview = can_manage + [SecretLinks("preview")]
     can_view = can_manage + [SecretLinks("view"), ProprietaryRecordPermissions(), CommunityAction("view")]
