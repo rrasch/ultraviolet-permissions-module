@@ -91,7 +91,11 @@ class AdminSuperUser(Generator):
 
 
 class Depositor(Generator):
-    """Allows users with the "trusted-user" role."""
+    """Allows users with the "depositor" role."""
+
+    def __init__(self):
+        """Constructor."""
+        super(Depositor, self).__init__()
 
     def needs(self, record=None, **kwargs):
         """Enabling Needs."""
@@ -152,10 +156,7 @@ class Curator(Generator):
 
     def needs(self, record=None, **kwargs):
         """Enabling Needs."""
-        roles = get_roles(record, "curator")
-        if len(roles) == 0:
-            return []
-        return [RoleNeed(role) for role in roles]
+        return [RoleNeed("curator")]
 
 
 class IfRestricted(Generator):

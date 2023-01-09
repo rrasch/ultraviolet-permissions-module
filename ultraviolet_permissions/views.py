@@ -12,9 +12,28 @@
 # the templates and static folders as well as the test case.
 
 from flask import Blueprint
+from .policies import UVCommunitiesPermissionPolicy
 
 blueprint = Blueprint(
     'ultraviolet_permissions',
     __name__,
     static_folder='static',
 )
+
+
+# @blueprint.record_once
+# def override_communities_permissions(state):
+#     """Override permission policy class for communities."""
+#     # Does not impact community creation in any way but allows for customizing other communities permission policies
+#     app = state.app
+#     communities = app.extensions.get("invenio-communities", None)
+#     assert communities is not None
+#
+#     # override the permission policy class for all communities services
+#     svc = communities.service
+#     svc.config.permission_policy_cls = UVCommunitiesPermissionPolicy
+#     svc.files.config.permission_policy_cls = UVCommunitiesPermissionPolicy
+#     svc.members.config.permission_policy_cls = UVCommunitiesPermissionPolicy
+#
+#     app.logger.debug("Updated Communities Permissions to Ultraviolet-Specific policies")
+

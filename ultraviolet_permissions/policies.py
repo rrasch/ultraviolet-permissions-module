@@ -13,6 +13,7 @@ from invenio_records_permissions.generators import AnyUser, \
 from invenio_rdm_records.services.permissions import RDMRecordPermissionPolicy
 from invenio_rdm_records.services.generators import RecordOwners, SecretLinks, CommunityAction
 from .generators import ProprietaryRecordPermissions, AdminSuperUser, Curator, Depositor, Viewer, RestrictedDataUser, PublicViewer, IfRestricted
+from invenio_communities.permissions import CommunityPermissionPolicy
 
 
 class UltraVioletPermissionPolicy(RDMRecordPermissionPolicy):
@@ -33,7 +34,7 @@ class UltraVioletPermissionPolicy(RDMRecordPermissionPolicy):
     #
     can_manage = [SystemProcess(), AdminSuperUser(), Depositor()]
     can_curate = can_manage + [SecretLinks("edit"), Curator()]
-    can_preview = can_manage + [SecretLinks("preview")]
+    can_preview = can_manage + [SecretLinks("preview"), Curator()]
     can_view = can_manage + [SecretLinks("view"), ProprietaryRecordPermissions(), CommunityAction("view")]
 
     can_authenticated = [AuthenticatedUser(), SystemProcess()]
@@ -253,3 +254,16 @@ class DataUseRecordPermissionPolicy(RDMRecordPermissionPolicy):
     can_create_files = [Disable()]
     can_update_files = [Disable()]
     can_delete_files = [Disable()]
+
+
+class UVCommunitiesPermissionPolicy(CommunityPermissionPolicy):
+    """Communities permission policy of NYU Ultraviolet."""
+
+    # for now, we want to restrict the creation of communities to admins
+    # and disable write operations if the system is in read-only mode
+    #
+    # current state: invenio-communities v3.1.0
+    #
+    # TODO: discuss who should have permissions to create communities
+    #       -> new role?
+    can_create = [SystemProcess(), AdminSuperUser()]

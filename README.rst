@@ -6,7 +6,7 @@
     details.
 
 ========================
- Ultraviolet Permssions
+ Ultraviolet Permissions
 ========================
 
 .. image:: https://github.com/nyudlts/ultraviolet-permissions-module/workflows/CI/badge.svg
@@ -23,7 +23,12 @@
 
 Invenio module that is used to define user permissions for NYUltraviolet ( NYU InvenioRDM instance)
 
-TODO: Please provide feature overview of module
+To install and enable custom permissions policy, use the following command::
 
-Further documentation is available on
-https://ultraviolet-permissions.readthedocs.io/
+pipenv run pip install git+https://github.com/nyudlts/ultraviolet-permissions-module.git@nyu-records-restrictions
+
+And then, add the following to invenio.cfg::
+
+from ultraviolet_permissions.policies import UltraVioletPermissionPolicy
+RDM_PERMISSION_POLICY = UltraVioletPermissionPolicy
+
