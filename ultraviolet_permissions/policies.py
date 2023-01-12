@@ -7,7 +7,8 @@
 # it under the terms of the MIT License; see LICENSE file for more details.
 
 """Permissions for UltravioLet  Records. Mostly similar to InvenioRDM but adds policy for Proprietary records"""
-
+from flask import current_app
+from flask_principal import Permission, RoleNeed
 from invenio_records_permissions.generators import AnyUser, \
     AuthenticatedUser, Disable, SystemProcess
 from invenio_rdm_records.services.permissions import RDMRecordPermissionPolicy
@@ -254,6 +255,10 @@ class DataUseRecordPermissionPolicy(RDMRecordPermissionPolicy):
     can_create_files = [Disable()]
     can_update_files = [Disable()]
     can_delete_files = [Disable()]
+
+
+def ultraviolet_admin_permission_factory(admin_view):
+    return Permission(RoleNeed(current_app.config["ADMIN_ROLE"]))
 
 
 class UVCommunitiesPermissionPolicy(CommunityPermissionPolicy):
