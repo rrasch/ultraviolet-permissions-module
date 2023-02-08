@@ -7,13 +7,14 @@
 # it under the terms of the MIT License; see LICENSE file for more details.
 
 """Permissions for UltravioLet  Records. Mostly similar to InvenioRDM but adds policy for Proprietary records"""
-
+from flask import current_app
+from flask_principal import Permission, RoleNeed
 from invenio_records_permissions.generators import AnyUser, \
     AuthenticatedUser, Disable, SystemProcess
 from invenio_rdm_records.services.permissions import RDMRecordPermissionPolicy
-from invenio_rdm_records.services.generators import RecordOwners, SecretLinks
+from invenio_rdm_records.services.generators import RecordOwners, SecretLinks, CommunityAction
 from .generators import ProprietaryRecordPermissions, AdminSuperUser, Curator, Depositor, Viewer, RestrictedDataUser, PublicViewer, IfRestricted
-
+from invenio_communities.permissions import CommunityPermissionPolicy
 
 
 class UltraVioletPermissionPolicy(RDMRecordPermissionPolicy):
@@ -32,10 +33,10 @@ class UltraVioletPermissionPolicy(RDMRecordPermissionPolicy):
     #
     # High-level permissions (used by low-level)
     #
-    can_manage = [RecordOwners(), SystemProcess(), AdminSuperUser()]
+    can_manage = [SystemProcess(), AdminSuperUser(), Depositor()]
     can_curate = can_manage + [SecretLinks("edit"), Curator()]
-    can_preview = can_manage + [SecretLinks("preview")]
-    can_view = can_manage + [SecretLinks("view"), ProprietaryRecordPermissions()]
+    can_preview = can_manage + [SecretLinks("preview"), Curator()]
+    can_view = can_manage + [SecretLinks("view"), ProprietaryRecordPermissions(), CommunityAction("view")]
 
     can_authenticated = [AuthenticatedUser(), SystemProcess()]
     can_all = [AnyUser(), SystemProcess(), PublicViewer()]
@@ -43,14 +44,8 @@ class UltraVioletPermissionPolicy(RDMRecordPermissionPolicy):
     #
     #  Records
     #
-    # Allow searching of records
-    can_search = can_all
-    # Allow reading metadata of a record
-    can_read = [IfRestricted('record', then_=can_view, else_=can_all)]
-    # Allow reading the files of a record
-    can_read_files = [IfRestricted('files', then_=can_view, else_=can_all)]
     # Allow submitting new record
-    can_create = can_authenticated
+    can_create = can_manage
 
     #
     # Drafts
@@ -260,3 +255,20 @@ class DataUseRecordPermissionPolicy(RDMRecordPermissionPolicy):
     can_create_files = [Disable()]
     can_update_files = [Disable()]
     can_delete_files = [Disable()]
+
+
+def ultraviolet_admin_permission_factory(admin_view):
+    return Permission(RoleNeed(current_app.config["ADMIN_ROLE"]))
+
+
+class UVCommunitiesPermissionPolicy(CommunityPermissionPolicy):
+    """Communities permission policy of NYU Ultraviolet."""
+
+    # for now, we want to restrict the creation of communities to admins
+    # and disable write operations if the system is in read-only mode
+    #
+    # current state: invenio-communities v3.1.0
+    #
+    # TODO: discuss who should have permissions to create communities
+    #       -> new role?
+    can_create = [SystemProcess(), AdminSuperUser()]
