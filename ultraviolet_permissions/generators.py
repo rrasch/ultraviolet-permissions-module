@@ -10,7 +10,7 @@
 #
 
 """UltraViolet Permissions Generators."""
-from elasticsearch_dsl import Q
+from invenio_search.engine import dsl
 from invenio_access.permissions import authenticated_user, superuser_access, any_user
 from invenio_access.models import  RoleNeed
 from invenio_records_permissions.generators import Generator
@@ -68,7 +68,7 @@ class ProprietaryRecordPermissions(Generator):
 
     def query_filter(self, **kwargs):
         """Match all in search."""
-        return Q('can_all')
+        return dsl.Q('can_all')
 
 
 class AdminSuperUser(Generator):
@@ -85,7 +85,7 @@ class AdminSuperUser(Generator):
     def query_filter(self, identity=None, **kwargs):
         """Filters for current identity as super user."""
         if superuser_access in identity.provides:
-            return Q('match_all')
+            return dsl.Q('match_all')
         else:
             return []
 
@@ -198,4 +198,4 @@ class IfRestricted(Generator):
     def query_filter(self, **kwargs):
         """Filters for current identity as super user."""
         # TODO: Implement with new permissions metadata
-        return Q('match_all')
+        return dsl.Q('match_all')

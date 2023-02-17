@@ -12,11 +12,11 @@
 # the templates and static folders as well as the test case.
 
 from flask import Blueprint
-from .policies import UVCommunitiesPermissionPolicy
-from flask_menu import current_menu
-from flask_babelex import lazy_gettext as _
-import time
-import threading
+# from .policies import UVCommunitiesPermissionPolicy
+# from flask_menu import current_menu
+# from flask_babelex import lazy_gettext as _
+# import time
+# import threading
 
 blueprint = Blueprint(
     'ultraviolet_permissions',
@@ -41,16 +41,16 @@ blueprint = Blueprint(
 #
 #     app.logger.debug("Updated Communities Permissions to Ultraviolet-Specific policies")
 
-@blueprint.record_once
-def override_menu(state):
-    current_menu = state.app.extensions.get("menu", None)
-    def run_job():
-        while not state.app.got_first_request:
-            time.sleep(1)
-        current_menu.submenu("actions.deposit").register(
-            "invenio_app_rdm_users.uploads", _("My Deposits"), order=1
-        )
-        state.app.logger.debug("Updated Dashboard to 'My Deposits'")
-
-    thread = threading.Thread(target=run_job, daemon=True)
-    thread.start()
+# @blueprint.record_once
+# def override_menu(state):
+#     current_menu = state.app.extensions.get("menu", None)
+#     def run_job():
+#         while not state.app.got_first_request:
+#             time.sleep(1)
+#         current_menu.submenu("actions.deposit").register(
+#             "invenio_app_rdm_users.uploads", _("My Deposits"), order=1
+#         )
+#         state.app.logger.debug("Updated Dashboard to 'My Deposits'")
+#
+#     thread = threading.Thread(target=run_job, daemon=True)
+#     thread.start()
