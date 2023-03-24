@@ -82,17 +82,17 @@ class UltraVioletPermissionPolicy(RDMRecordPermissionPolicy):
     can_publish = can_curate
     # Allow lifting a record or draft.
     can_lift_embargo = can_manage
+    # Allow deleting of records by admins
+    can_delete = can_manage
+    can_delete_files = can_manage
 
     #
     # Disabled actions (these should not be used or changed)
     #
-    # - Records/files are updated/deleted via drafts so we don't support
-    #   using below actions.
     can_update = [Disable()]
-    can_delete = [Disable()]
     can_create_files = [Disable()]
     can_update_files = [Disable()]
-    can_delete_files = [Disable()]
+
 
 
 
