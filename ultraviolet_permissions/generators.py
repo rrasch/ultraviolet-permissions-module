@@ -13,7 +13,7 @@
 from invenio_search.engine import dsl
 from invenio_access.permissions import authenticated_user, superuser_access, any_user
 from invenio_access.models import  RoleNeed
-from invenio_records_permissions.generators import Generator
+from invenio_records_permissions.generators import ConditionalGenerator, Generator
 from flask_login import current_user
 
 from invenio_files_rest.models import Location
@@ -230,7 +230,7 @@ class IfRestricted(Generator):
         return dsl.Q('match_all')
 
 
-class IfSuppressedFile(Generator):
+class IfSuppressedFile(ConditionalGenerator):
     """Conditional generator for suppressed files."""
 
     def _condition(self, record, file_key=None, **kwargs):
@@ -240,16 +240,8 @@ class IfSuppressedFile(Generator):
             file = file_record.file if file_record is not None else None
             is_file_suppressed = file and is_suppressed(file)
         else:
-            # files_records = record.files.entries
-            # for file_record in file_records:
-            #     file = file_record.file
-            #     if file and not is_suppressed(file):
-            #         is_file_suppressed = False
-            #         break
-            is_suppressed = all(
-                [
-                    file_record.file and is_suppressed(file_record.file)
-                    for file_record in file_records
-                ]
+            file_records = record.files.entries
+            is_file_suppressed = file_records and all(
+                is_suppressed(file_record.file) for file_record in file_records
             )
         return is_file_suppressed
