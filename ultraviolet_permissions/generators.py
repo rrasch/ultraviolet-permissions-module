@@ -13,8 +13,13 @@
 from invenio_search.engine import dsl
 from invenio_access.permissions import authenticated_user, superuser_access, any_user
 from invenio_access.models import  RoleNeed
-from invenio_records_permissions.generators import ConditionalGenerator, Generator
+from invenio_records_permissions.generators import Generator
 from flask_login import current_user
+
+try:
+    from invenio_records_permissions.generators import ConditionalGenerator
+except ImportError:
+    from invenio_rdm_records.services.generators import ConditionalGenerator
 
 from invenio_files_rest.models import Location
 from invenio_rdm_records.proxies import current_rdm_records
